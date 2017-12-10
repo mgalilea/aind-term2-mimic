@@ -22,6 +22,14 @@ detector.detectAllAppearance();
 // Unicode values for all emojis Affectiva can detect
 var emojis = [ 128528, 9786, 128515, 128524, 128527, 128521, 128535, 128539, 128540, 128542, 128545, 128563, 128561 ];
 
+//My variables to control the number of tries
+var numTotalGuesses = 0;
+var initTime=0;
+var finalTime=0;
+var guessTime=12;
+var numWin=0;
+var numTotal=0;
+
 // Update target emoji being displayed by supplying a unicode value
 function setTargetEmoji(code) {
   $("#target").html("&#" + code + ";");
@@ -134,6 +142,7 @@ detector.addEventListener("onImageResultsSuccess", function(faces, image, timest
 
     // TODO: Call your function to run the game (define it first!)
     // <your code here>
+	playMimicMe(faces[0],timestamp);
   }
 });
 
@@ -194,3 +203,46 @@ function drawEmoji(canvas, img, face) {
 // - Define a game reset function (same as init?), and call it from the onReset() function above
 
 // <your code here>
+function playMimicMe(face,timestamp){
+	
+	var targetEmojiCode = 0;
+	var currentEmojiCode= 0;
+	var numEmojiCode=0;
+	var minValuesEmoji=0;
+	var maxValuesEmoji=emojis.length;
+	
+	//log('#logs', "Antes  de if " + numTotalGuesses);
+	
+	if (numTotalGuesses==0) {
+		//log('#logs', "Dentro de if " + numTotalGuesses);
+		initTime=parseFloat(timestamp.toFixed(2));
+		log('#logs', "initTime " + initTime);
+		finalTime=initTime + parseFloat(guessTime);
+		log('#logs', "finalTime " + finalTime);
+		numEmojiCode=Math.floor(Math.random() * (maxValuesEmoji - minValuesEmoji + 1)) + minValuesEmoji;
+		log('#logs', "numEmojiCode " + numEmojiCode);
+		targetEmojiCode = emojis[numEmojiCode];
+		setTargetEmoji(targetEmojiCode);
+	}
+	
+	numTotalGuesses=numTotalGuesses+1;
+	
+	//log('#logs', "Despues  de if " + numTotalGuesses);
+	
+	if (timestamp > finalTime) {
+		numTotalGuesses=0;
+		numTotal=numTotal+1;
+		//log('#logs', "Timestamp " + finalTime + " " + timestamp);
+		setScore(numWin,numTotal);
+	} else {
+		currentEmojiCode=toUnicode(face.emojis.dominantEmoji);
+		if (currentEmojiCode == targetEmojiCode) {
+			log('#logs', "Mismo Emoticono ");
+			numTotalGuesses=0;
+			numWin=numWin +1;
+			numTotal=numTotal+1;
+			setScore(numWin,numTotal);
+		}
+	}
+	
+}
